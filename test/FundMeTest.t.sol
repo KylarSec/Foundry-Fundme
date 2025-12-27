@@ -10,6 +10,7 @@ contract FundMeTest is Test {
     FundMe fm;
 
     function setUp() external {
+        //us -> FundMeTest -> FundMe
         fm = new FundMe();
     }
 
@@ -17,9 +18,17 @@ contract FundMeTest is Test {
         assertEq(fm.MINIMUM_USD(), 5e18);
     }
 
-    function testOwnerIsMsgSender() public {
-        console.log(fm.i_owner());
-        console.log(msg.sender);
-        assertEq(fm.i_owner(), msg.sender);
+    /**
+     *The test is testOwnerisDeployer because this test contract will deploy the
+     * FundeMe contract so this test contract will be the owner.
+     */
+    function test_OwnerIsDeployer() public {
+        //address(this) -> address of this contract
+        assertEq(fm.i_owner(), address(this));
+    }
+
+    function test_CheckPriceFeedVersion() public {
+        uint256 version = fm.GetVersion();
+        assertEq(version, 4);
     }
 }

@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
+// Import Chainlink price feed interface
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+
 // Import the PriceConverter Library
 import {PriceConverter} from "./PriceConverter.sol";
 
@@ -50,7 +53,10 @@ contract FundMe {
      * - Reverts if the USD value is below minimumUSD
      */
     function fund() public payable {
-        require(PriceConverter.getConversionRate(msg.value) >= MINIMUM_USD, "Didn't Send enough ETH");
+        require(
+            PriceConverter.getConversionRate(msg.value) >= MINIMUM_USD,
+            "Didn't Send enough ETH"
+        );
 
         // add addresses to the array who sends money to the contract.
         // The msg.sender global variable refers to the address that initiates the transaction.
@@ -73,7 +79,11 @@ contract FundMe {
          *runs until it reaches the end of the funders array
          *increments fundersIndex by 1 each iteration
          */
-        for (uint256 fundersIndex = 0; fundersIndex < funders.length; fundersIndex++) {
+        for (
+            uint256 fundersIndex = 0;
+            fundersIndex < funders.length;
+            fundersIndex++
+        ) {
             // Get the funder's address at the current index.
             address funder = funders[fundersIndex];
 
@@ -88,8 +98,18 @@ contract FundMe {
         funders = new address[](0);
 
         // the current contract sends the Ether amount to the msg.sender with call
-        (bool success,) = payable(msg.sender).call{value: address(this).balance}("");
+        (bool success, ) = payable(msg.sender).call{
+            value: address(this).balance
+        }("");
         require(success, "Call Failed");
+    }
+
+    // Get the version of the price feed contract
+    function GetVersion() external view returns (uint256) {
+        AggregatorV3Interface datafeed = AggregatorV3Interface(
+            0x694AA1769357215DE4FAC081bf1f309aDC325306
+        );
+        return datafeed.version();
     }
 
     // receive() is called when the contract receives ETH
