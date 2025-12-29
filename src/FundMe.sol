@@ -7,7 +7,7 @@ import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interf
 // Import the PriceConverter Library
 import {PriceConverter} from "./PriceConverter.sol";
 
-/*
+/**
  * FundMe contract
  * - Accepts ETH from users
  * - Converts ETH value to USD using Chainlink
@@ -17,12 +17,15 @@ contract FundMe {
     // Declared a custom error
     error FundMe__NotOwner();
 
+    AggregatorV3Interface private s_pricefeed;
+
     // state variable owner with the contract deployer's address
     address public immutable i_owner;
 
     // set the contract's owner immediately after deployment
-    constructor() {
+    constructor(address dataFeed) {
         i_owner = msg.sender;
+        s_pricefeed = AggregatorV3Interface(dataFeed);
     }
 
     // Modifier to check only owner with custom error.
@@ -46,15 +49,17 @@ contract FundMe {
     // Tracks how many times each address has funded
     mapping(address => uint256) public contributionCount;
 
-    /*
+    /**
      * Allows users to send ETH to the contract
      * - msg.value is the ETH sent (in wei)
      * - Converted to USD using the PriceConverter library
      * - Reverts if the USD value is below minimumUSD
      */
+    // ETH amount → pass to library → library asks Chainlink → converts to USD → returns number → require checks it
     function fund() public payable {
         require(
-            PriceConverter.getConversionRate(msg.value) >= MINIMUM_USD,
+            PriceConverter.getConversionRate(msg.value, s_pricefeed) >=
+                MINIMUM_USD,
             "Didn't Send enough ETH"
         );
 
@@ -62,7 +67,7 @@ contract FundMe {
         // The msg.sender global variable refers to the address that initiates the transaction.
         funders.push(msg.sender);
 
-        /*
+        /**
          * Mapping associates each funder's address with the total amount they have contributed.
          * When a new amount is sent, we can add it to the user's total contribution
          */
@@ -74,7 +79,7 @@ contract FundMe {
 
     // withdraw ETH While clearing records.
     function withdraw() external onlyOwner {
-        /*
+        /**
          *starts at index 0
          *runs until it reaches the end of the funders array
          *increments fundersIndex by 1 each iteration
@@ -106,10 +111,7 @@ contract FundMe {
 
     // Get the version of the price feed contract
     function GetVersion() external view returns (uint256) {
-        AggregatorV3Interface datafeed = AggregatorV3Interface(
-            0x694AA1769357215DE4FAC081bf1f309aDC325306
-        );
-        return datafeed.version();
+        return s_pricefeed.version();
     }
 
     // receive() is called when the contract receives ETH
