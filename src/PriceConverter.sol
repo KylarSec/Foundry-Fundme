@@ -22,10 +22,11 @@ library PriceConverter {
      * - Chainlink returns price with 8 decimals
      * - We convert it to 18 decimals so it matches ETH math
      */
-    function getPrice() internal view returns (uint256) {
-        AggregatorV3Interface dataFeed = AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306);
+    function getPrice(
+        AggregatorV3Interface dataFeed
+    ) internal view returns (uint256) {
         // Get latest price data
-        (, int256 answer,,,) = dataFeed.latestRoundData();
+        (, int256 answer, , , ) = dataFeed.latestRoundData();
 
         // Ensure the price is positive before converting to uint
         require(answer > 0, "Invalid Price");
@@ -39,9 +40,12 @@ library PriceConverter {
      * - ethAmount is usually msg.value(wei)
      * - Returns USD value with 18 decimals
      */
-    function getConversionRate(uint256 ethAmount) internal view returns (uint256) {
+    function getConversionRate(
+        uint256 ethAmount,
+        AggregatorV3Interface dataFeed
+    ) internal view returns (uint256) {
         // GetETH price in USD (18 decimals)
-        uint256 ethPrice = getPrice();
+        uint256 ethPrice = getPrice(dataFeed);
 
         // ETH --> USD conversion
         uint256 ethAmountinUsd = (ethPrice * ethAmount) / 1e18;
