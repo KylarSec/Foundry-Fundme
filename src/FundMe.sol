@@ -41,13 +41,13 @@ contract FundMe {
     uint256 public constant MINIMUM_USD = 5 * 1e18;
 
     // List of addresses that have funded the contract
-    address[] public funders;
+    address[] private s_funders;
 
     // Tracks total ETH contributed by each address
-    mapping(address => uint256) public addressToFundedAccount;
+    mapping(address => uint256) private s_addressToFundedAccount;
 
     // Tracks how many times each address has funded
-    mapping(address => uint256) public contributionCount;
+    mapping(address => uint256) private contributionCount;
 
     /**
      * Allows users to send ETH to the contract
@@ -65,13 +65,13 @@ contract FundMe {
 
         // add addresses to the array who sends money to the contract.
         // The msg.sender global variable refers to the address that initiates the transaction.
-        funders.push(msg.sender);
+        s_funders.push(msg.sender);
 
         /**
          * Mapping associates each funder's address with the total amount they have contributed.
          * When a new amount is sent, we can add it to the user's total contribution
          */
-        addressToFundedAccount[msg.sender] += msg.value;
+        s_addressToFundedAccount[msg.sender] += msg.value;
 
         // Count everytime a user funds
         contributionCount[msg.sender] += 1;
@@ -86,21 +86,21 @@ contract FundMe {
          */
         for (
             uint256 fundersIndex = 0;
-            fundersIndex < funders.length;
+            fundersIndex < s_funders.length;
             fundersIndex++
         ) {
             // Get the funder's address at the current index.
-            address funder = funders[fundersIndex];
+            address funder = s_funders[fundersIndex];
 
             // Reset the total amount funded by this address to zero.
-            addressToFundedAccount[funder] = 0;
+            s_addressToFundedAccount[funder] = 0;
 
             // Reset the number of contributions made by this address
             contributionCount[funder] = 0;
         }
 
         // Reset the funders array by Creating a new array with length 0.
-        funders = new address[](0);
+        s_funders = new address[](0);
 
         // the current contract sends the Ether amount to the msg.sender with call
         (bool success, ) = payable(msg.sender).call{
@@ -112,6 +112,10 @@ contract FundMe {
     // Get the version of the price feed contract
     function GetVersion() external view returns (uint256) {
         return s_pricefeed.version();
+    }
+
+    function GetPrice() external view returns (uint256) {
+        return PriceConverter.getPrice(s_pricefeed);
     }
 
     // receive() is called when the contract receives ETH
@@ -126,5 +130,17 @@ contract FundMe {
     // It also forwards the ETH to the fund() function.
     fallback() external payable {
         fund();
+    }
+
+    /**Getter Functions */
+
+    function getAddressToAmountFunded(
+        address funderAddress
+    ) public view returns (uint256) {
+        return s_addressToFundedAccount[funderAddress];
+    }
+
+    function getFunders(uint256 index) public view returns (address) {
+        return s_funders[index];
     }
 }
