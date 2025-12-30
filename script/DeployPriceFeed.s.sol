@@ -1,14 +1,20 @@
 // SPDX-License-Identifier: MIT
+
+// Depoloy a Mock Feed Manually if Want.
 pragma solidity ^0.8.18;
 
 import {Script} from "forge-std/Script.sol";
 
-import {Pricefeed} from "../src/PriceFeedContract/CustomPriceFeed.sol";
+import {MockPricefeed} from "../test/Mock/CustomPriceFeed.sol";
 
 contract DeployPriceFeed is Script {
-    function run() external returns (Pricefeed) {
+    uint8 public constant DECIMAL = 8;
+
+    int256 public constant INITIAL_PRICE = 3000e8;
+
+    function run() external returns (MockPricefeed) {
         vm.startBroadcast();
-        Pricefeed pricefeed = new Pricefeed(301157000000);
+        MockPricefeed pricefeed = new MockPricefeed(DECIMAL, INITIAL_PRICE);
         vm.stopBroadcast();
         return pricefeed;
     }
