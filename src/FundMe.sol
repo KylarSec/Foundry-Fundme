@@ -20,7 +20,7 @@ contract FundMe {
     AggregatorV3Interface private s_pricefeed;
 
     // state variable owner with the contract deployer's address
-    address public immutable i_owner;
+    address private immutable i_owner;
 
     // set the contract's owner immediately after deployment
     constructor(address dataFeed) {
@@ -142,5 +142,9 @@ contract FundMe {
 
     function getFunders(uint256 index) public view returns (address) {
         return s_funders[index];
+    }
+
+    function geti_Owner() public view returns (address) {
+        return i_owner;
     }
 }
