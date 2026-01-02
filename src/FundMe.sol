@@ -7,6 +7,9 @@ import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interf
 // Import the PriceConverter Library
 import {PriceConverter} from "./PriceConverter.sol";
 
+// Declared a custom error
+error FundMe__NotOwner();
+
 /**
  * FundMe contract
  * - Accepts ETH from users
@@ -14,9 +17,6 @@ import {PriceConverter} from "./PriceConverter.sol";
  * - Enforces a minimum USD amount
  */
 contract FundMe {
-    // Declared a custom error
-    error FundMe__NotOwner();
-
     AggregatorV3Interface private s_pricefeed;
 
     // state variable owner with the contract deployer's address
@@ -79,6 +79,7 @@ contract FundMe {
 
     // withdraw ETH While clearing records.
     function withdraw() external onlyOwner {
+        uint256 fundersLength = s_funders.length;
         /**
          *starts at index 0
          *runs until it reaches the end of the funders array
@@ -86,7 +87,7 @@ contract FundMe {
          */
         for (
             uint256 fundersIndex = 0;
-            fundersIndex < s_funders.length;
+            fundersIndex < fundersLength;
             fundersIndex++
         ) {
             // Get the funder's address at the current index.
@@ -144,7 +145,7 @@ contract FundMe {
         return s_funders[index];
     }
 
-    function geti_Owner() public view returns (address) {
+    function get_Owner() public view returns (address) {
         return i_owner;
     }
 }

@@ -44,7 +44,7 @@ contract FundMeTest is Test {
 
         vm.prank(deployer);
         FundMe newFundMe = new FundMe(address(deployer));
-        assertEq(newFundMe.geti_Owner(), deployer);
+        assertEq(newFundMe.get_Owner(), deployer);
     }
 
     function test_CheckPriceFeedVersion() public view {
@@ -80,7 +80,7 @@ contract FundMeTest is Test {
     }
 
     function testOnly_Owner_Can_Withdraw() public {
-        address owner = fm.geti_Owner();
+        address owner = fm.get_Owner();
 
         vm.prank(owner);
         fm.withdraw();
@@ -99,7 +99,7 @@ contract FundMeTest is Test {
     }
 
     function testBalance_Zero_After_Withdraw_ByOwner() public {
-        address owner = fm.geti_Owner();
+        address owner = fm.get_Owner();
         vm.prank(owner);
         fm.withdraw();
 
@@ -152,22 +152,53 @@ contract FundMeTest is Test {
         // 1. Arrange
         uint256 startingFundMeBalance = address(fm).balance;
         // console.log(startingFundMeBalance);
-        uint256 startingOwnerBalance = fm.geti_Owner().balance;
+        uint256 startingOwnerBalance = fm.get_Owner().balance;
         // console.log(startingOwnerBalance);
 
         // 2. Act
-        vm.prank(fm.geti_Owner());
+        vm.prank(fm.get_Owner());
         fm.withdraw();
 
         // 3. Assert
         uint256 endingFundMeBalance = address(fm).balance;
         // console.log(endingFundMeBalance);
-        uint256 endingOwnerBalance = fm.geti_Owner().balance;
+        uint256 endingOwnerBalance = fm.get_Owner().balance;
         // console.log(endingOwnerBalance);
         assertEq(endingFundMeBalance, 0);
         assertEq(
             startingFundMeBalance + startingOwnerBalance,
             endingOwnerBalance
+        );
+    }
+
+    function testWithdrawFromMultipleFunders() public {
+        // 1. SETUP - multiple funders
+        address OWNER = fm.get_Owner();
+        uint160 numberOfFunders = 10;
+        for (uint160 i = 1; i < numberOfFunders + 1; i++) {
+            /**
+             * hoax(addr, amount) = Give this address ETH and make it the caller.
+             * vm.deal(addr, amount)
+             * vm.prank(addr)
+             */
+            hoax(address(i), FUND_VALUE);
+            fm.fund{value: FUND_VALUE}();
+        }
+
+        // 2. Arrange - Snapshot balance
+        uint256 startingFundMeBalance = address(fm).balance;
+        uint256 startingOwnerBalance = OWNER.balance;
+
+        // 3. Act - Withdraw as owner
+        vm.prank(OWNER);
+        fm.withdraw();
+
+        // 4. Assertions
+        assertEq(address(fm).balance, 0);
+        assertEq(startingFundMeBalance + startingOwnerBalance, OWNER.balance);
+        assertEq(
+            numberOfFunders * FUND_VALUE,
+            OWNER.balance - startingOwnerBalance
         );
     }
 }
