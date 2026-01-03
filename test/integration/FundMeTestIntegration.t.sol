@@ -23,7 +23,13 @@ contract InteractionTest is Test {
 
     function testUserCanFundAndOwnerWithdraw() public {
         uint256 preUserBalance = address(mockUser).balance;
+        // console.log(preUserBalance);
         uint256 preOwnerBalance = address(fm.get_Owner()).balance;
+        // console.log(preOwnerBalance);
+
+        // This is for running forked tests!
+        uint256 originalFundMeBalance = address(fm).balance;
+        // console.log(originalFundMeBalance);
 
         // Using vm.prank to simulate funding from the mockUser address
         vm.prank(mockUser);
@@ -33,10 +39,15 @@ contract InteractionTest is Test {
         withdrawFundMe.withdrawFundMe(address(fm));
 
         uint256 afterUserBalance = address(mockUser).balance;
+        // console.log(afterUserBalance);
         uint256 afterOwnerBalance = address(fm.get_Owner()).balance;
+        // console.log(afterOwnerBalance);
 
         assertEq(address(fm).balance, 0);
         assertEq(afterUserBalance + FUND_VALUE, preUserBalance);
-        assertEq(preOwnerBalance + FUND_VALUE, afterOwnerBalance);
+        assertEq(
+            preOwnerBalance + FUND_VALUE + originalFundMeBalance,
+            afterOwnerBalance
+        );
     }
 }

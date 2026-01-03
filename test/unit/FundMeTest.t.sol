@@ -187,6 +187,11 @@ contract FundMeTest is Test {
         // 1. SETUP - multiple funders
         address OWNER = fm.get_Owner();
         uint160 numberOfFunders = 10;
+
+        // This is for running forked tests!
+        uint256 originalFundMeBalance = address(fm).balance;
+        // console.log("value: %s", originalFundMeBalance);
+
         for (uint160 i = 1; i < numberOfFunders + 1; i++) {
             /**
              * hoax(addr, amount) = Give this address ETH and make it the caller.
@@ -208,10 +213,12 @@ contract FundMeTest is Test {
         // 4. Assertions
         assertEq(address(fm).balance, 0);
         assertEq(startingFundMeBalance + startingOwnerBalance, OWNER.balance);
-        assertEq(
-            numberOfFunders * FUND_VALUE,
-            OWNER.balance - startingOwnerBalance
-        );
+
+        uint256 expectedTotalValueWithdrawn = ((numberOfFunders) * FUND_VALUE) +
+            originalFundMeBalance;
+        uint256 totalValueWithdrawn = OWNER.balance - startingOwnerBalance;
+
+        assert(expectedTotalValueWithdrawn == totalValueWithdrawn);
     }
 
     // Failed because Foundry does NOT deduct gas costs from account balances in tests — even if you set vm.fee() and vm.txGasPrice().
