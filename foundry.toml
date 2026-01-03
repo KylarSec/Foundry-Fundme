@@ -4,4 +4,8 @@ out = "out"
 libs = ["lib"]
 remappings = ["@chainlink/=lib/chainlink-brownie-contracts/"]
 
+# This tells Foundry: “I explicitly allow scripts to read files from the broadcast    folder.”
+fs_permissions = [{ access = "read", path = "./broadcast" }]
+
+
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
