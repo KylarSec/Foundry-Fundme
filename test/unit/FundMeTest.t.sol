@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.18;
+
+// Unit tests prove logic correctness.
 
 import {Test, console} from "forge-std/Test.sol";
 
-import {FundMe} from "../src/FundMe.sol";
+import {FundMe} from "../../src/FundMe.sol";
 
-import {DeployFundMe} from "../script/DeployFundMe.s.sol";
+import {DeployFundMe} from "../../script/DeployFundMe.s.sol";
 
 contract FundMeTest is Test {
     address user1 = makeAddr("user1");
@@ -15,15 +16,14 @@ contract FundMeTest is Test {
 
     uint256 constant FUND_VALUE = 1 ether;
     uint256 constant STARTING_BALANCE = 10 ether;
+    uint256 constant GAS_PRICE = 6 gwei;
+    uint256 constant BASE_FEE = 1 gwei;
 
     FundMe fm;
 
     function setUp() external {
         DeployFundMe deployFundMe = new DeployFundMe();
         fm = deployFundMe.run();
-        vm.deal(user1, STARTING_BALANCE);
-        vm.deal(user2, STARTING_BALANCE);
-        vm.deal(user3, STARTING_BALANCE);
     }
 
     function testMinimumDollarIsFive() public view {
@@ -63,6 +63,8 @@ contract FundMeTest is Test {
      * 3. Then run the test
      */
     modifier fundedbyuser1() {
+        vm.deal(user1, STARTING_BALANCE);
+
         vm.prank(user1); //The next Transaction will be sent by user1
         fm.fund{value: FUND_VALUE}();
         assert(address(fm).balance > 0);
@@ -116,8 +118,10 @@ contract FundMeTest is Test {
         public
         fundedbyuser1
     {
+        vm.deal(user2, STARTING_BALANCE);
         vm.prank(user2);
         fm.fund{value: FUND_VALUE}();
+        vm.deal(user3, STARTING_BALANCE);
         vm.prank(user3);
         fm.fund{value: FUND_VALUE}();
 
@@ -155,9 +159,17 @@ contract FundMeTest is Test {
         uint256 startingOwnerBalance = fm.get_Owner().balance;
         // console.log(startingOwnerBalance);
 
+        // vm.txGasPrice(GAS_PRICE);
+        // uint256 gasStart = gasleft();
+
         // 2. Act
+
         vm.prank(fm.get_Owner());
         fm.withdraw();
+
+        // uint256 gasEnd = gasleft();
+        // uint256 gasUsed = (gasStart - gasEnd) * tx.gasprice;
+        // console.log("Withdraw consumed: %d gas", gasUsed);
 
         // 3. Assert
         uint256 endingFundMeBalance = address(fm).balance;
@@ -201,4 +213,25 @@ contract FundMeTest is Test {
             OWNER.balance - startingOwnerBalance
         );
     }
+
+    // Failed because Foundry does NOT deduct gas costs from account balances in tests — even if you set vm.fee() and vm.txGasPrice().
+    //     function test_GasPriceReduceCallerBalance() public {
+    //         vm.deal(user1, STARTING_BALANCE);
+
+    //         // Set base fee (EIP-1559)
+    //         vm.fee(BASE_FEE);
+
+    //         // Set max fee per gas
+    //         vm.txGasPrice(GAS_PRICE);
+
+    //         vm.prank(user1);
+    //         uint256 startuser1Balance = address(user1).balance;
+    //         console.log(startuser1Balance);
+
+    //         fm.fund{value: FUND_VALUE}();
+    //         uint256 enduser1Balance = address(user1).balance;
+    //         console.log(enduser1Balance);
+
+    //         assert(startuser1Balance - FUND_VALUE > enduser1Balance);
+    //     }
 }
