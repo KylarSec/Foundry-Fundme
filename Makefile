@@ -27,7 +27,6 @@ help:
 	@echo ""
 
 
-# all: clean remove install update build
 
 install :
 	forge install cyfrin/foundry-devops@0.2.2 && \
