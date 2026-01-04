@@ -1,10 +1,3 @@
-Yes. I’ll give you a **clean, simple, honest README** that matches **exactly where you are right now** — not over-engineered, not fake-professional.
-
-You can copy-paste this as `README.md`.
-
----
-
-```md
 # Foundry FundMe
 
 A Solidity project built using **Foundry** to understand smart contract development, testing, deployment, and interactions across **local Anvil**, **Sepolia**, and **zkSync** environments.
@@ -26,6 +19,7 @@ This project follows a learning-first approach while using real-world tooling an
 ---
 
 ## 📁 Project structure
+
 ```
 
 .
@@ -64,13 +58,14 @@ This project follows a learning-first approach while using real-world tooling an
 ├── README.md
 └── .gitignore
 
-````
+```
 
 ---
 
 ## ⚙️ Requirements
 
 - Foundry installed
+
 ```bash
   curl -L https://foundry.paradigm.xyz | bash
   foundryup
@@ -78,9 +73,9 @@ This project follows a learning-first approach while using real-world tooling an
 
 - (Optional) zkSync Foundry
 
-  ```bash
+```bash
   foundryup-zksync
-  ```
+```
 
 ---
 
@@ -195,4 +190,3 @@ To build strong fundamentals in:
 ## 📜 License
 
 MIT
-````
