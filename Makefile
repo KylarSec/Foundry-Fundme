@@ -1,6 +1,31 @@
--include .env
+-include .env .key
 
-.PHONY: all install anvil deploy deploy_and_verify fund_local fund_sepolia withdraw zkbuild zktest
+.PHONY: help install anvil deploy deploy-and-verify fund-local fund-sepolia withdraw-local withdraw-sepolia zkbuild zktest
+
+
+help:
+	@echo ""
+	@echo "Available make commands:"
+	@echo ""
+	@echo "Setup:"
+	@echo "  make install              Install Foundry dependencies"
+	@echo ""
+	@echo "Local development:"
+	@echo "  make anvil                Start local Anvil chain"
+	@echo "  make deploy               Deploy FundMe to local Anvil"
+	@echo "  make fund-local           Fund FundMe on local Anvil"
+	@echo "  make withdraw-local       Withdraw from FundMe on local Anvil"
+	@echo ""
+	@echo "Sepolia:"
+	@echo "  make deploy-and-verify    Deploy & verify FundMe on Sepolia"
+	@echo "  make fund-sepolia         Fund FundMe on Sepolia"
+	@echo "  make withdraw-sepolia     Withdraw from FundMe on Sepolia"
+	@echo ""
+	@echo "zkSync:"
+	@echo "  make zkbuild              Build contracts for zkSync"
+	@echo "  make zktest               Run tests on zkSync"
+	@echo ""
+
 
 # all: clean remove install update build
 
@@ -19,15 +44,15 @@ anvil :; anvil -m 'test test test test test test test test test test test junk' 
 
 # Network arguments for forge script commands
 NETWORK_ARGS := --rpc-url http:localhost:8545 --private-key $(PRIVATE_KEY) --broadcast
-S_NETWORK_ARGS := --rpc-url $(RPC_URL_SEPOLIA) --private-key $(S_PRIVATE_KEY) --broadcast
+S_NETWORK_ARGS := --rpc-url $(RPC_URL_SEPOLIA) --private-key $(PRIVATE_KEY_SEPOLIA) --broadcast
 
 deploy:
 	@forge script script/DeployFundMe.s.sol:DeployFundMe $(NETWORK_ARGS)
 
-deploy_sepolia:
+deploy-sepolia:
 	@forge script script/DeployFundMe.s.sol:DeployFundMe $(S_NETWORK_ARGS)
 
-deploy_and_verify:
+deploy-and-verify:
 	@forge script script/DeployFundMe.s.sol:DeployFundMe $(S_NETWORK_ARGS) --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
 
 
@@ -40,16 +65,16 @@ SENDER_ADDRESS := 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
 
 
  
-fund_local:
+fund-local:
 	@forge script script/Interaction.s.sol:FundFundMe --sender $(SENDER_ADDRESS) $(NETWORK_ARGS)
 
-fund_sepolia:
+fund-sepolia:
 	@forge script script/Interaction.s.sol:FundFundMe --sender $(S_SENDER_ADDRESS) $(S_NETWORK_ARGS)
 
-withdraw_local:
+withdraw-local:
 	@forge script script/Interaction.s.sol:WithdrawFundMe --sender $(SENDER_ADDRESS) $(NETWORK_ARGS)
 
-withdraw_sepolia:
+withdraw-sepolia:
 	@forge script script/Interaction.s.sol:WithdrawFundMe --sender $(S_SENDER_ADDRESS) $(S_NETWORK_ARGS)
 
 
